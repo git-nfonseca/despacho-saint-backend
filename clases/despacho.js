@@ -299,14 +299,21 @@ createDespacho = async (despacho) => {
 
 getItemsByDespacho = async (id) => {
   try {
-    const sql = `Select  SAITEMFAC.CodItem,SAITEMFAC.Descrip1, SUM(SAITEMFAC.Cantidad) AS Cantidad
-                  From SUDESPACHOS_01,SAITEMFAC
-                  WHERE
-                        SUDESPACHOS_01.numeroD = SAITEMFAC.NumeroD AND 
-                        SUDESPACHOS_01.tipoFac = SAITEMFAC.TipoFac AND 
-                        SUDESPACHOS_01.id_despacho = ${id}
-                        group by SAITEMFAC.CodItem,SAITEMFAC.Descrip1
-                        ORDER BY SAITEMFAC.CodItem`
+    const sql = `Select  SAITEMFAC.CodItem,SAITEMFAC.Descrip1, SUM(SAITEMFAC.Cantidad) AS Cantidad,
+                SACONF.Descrip As NombEmpresa , saconf.Direc1 , SACONF.Telef,
+                SUDESPACHOS.id As numdespacho, SUDESPACHOS.FechaE , 
+                (Select count(id_despacho) From SUDESPACHOS_01 
+                                        Where SUDESPACHOS_01.id_despacho = SUDESPACHOS.id ) as cant_documentos
+                From SUDESPACHOS_01,SAITEMFAC, SACONF, SUDESPACHOS
+                WHERE
+                            SUDESPACHOS.id = SUDESPACHOS_01.id_despacho AND
+                            SUDESPACHOS_01.numeroD = SAITEMFAC.NumeroD AND 
+                            SUDESPACHOS_01.tipoFac = SAITEMFAC.TipoFac AND 
+                            SUDESPACHOS_01.id_despacho = ${id}
+                            group by SAITEMFAC.CodItem,SAITEMFAC.Descrip1,
+                            SACONF.Descrip , saconf.Direc1 , SACONF.Telef,
+                            SUDESPACHOS.id, SUDESPACHOS.FechaE
+                            ORDER BY SAITEMFAC.CodItem`
     const results = await sql_query(sql)                  
     return results.recordset    
   } catch (e) {
