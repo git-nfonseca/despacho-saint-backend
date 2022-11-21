@@ -303,13 +303,30 @@ cerrarDespachos = async (despachos) => {
       const sql = ` UPDATE SUDESPACHOS SET estatus = 1 
                     WHERE
                      id in ${despachos}`  
-
       const results = await sql_query(sql) 
+      const docClose = await this.#cerrarDocumentosEnDespachos(despachos)
       return results.rowsAffected                      
   } catch (e) {
     console.log(e.message)
     return { message: e.message }    
   }
+}
+
+#cerrarDocumentosEnDespachos = async (despachos) => {
+   try {
+        const sql = ` UPDATE SAFACT set Notas10 = '01' 
+                      FROM SUDESPACHOS_01
+                      where
+                      SAFACT.TipoFac = SUDESPACHOS_01.tipoFac and 
+                      SAFACT.NumeroD = SUDESPACHOS_01.numeroD and 
+                      SUDESPACHOS_01.id_despacho in ${despachos}`  
+        const results = await sql_query(sql)       
+        return results.rowsAffected
+   } catch (e) {
+      console.log(e.message)
+      return { message: e.message }    
+     
+   }
 }
 
 getItemsByDespacho = async (id) => {
