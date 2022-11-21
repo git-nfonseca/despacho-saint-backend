@@ -297,11 +297,26 @@ createDespacho = async (despacho) => {
 }          
 }
 
+
+cerrarDespachos = async (despachos) => { 
+  try {
+      const sql = ` UPDATE SUDESPACHOS SET estatus = 1 
+                    WHERE
+                     id in ${despachos}`  
+
+      const results = await sql_query(sql) 
+      return results.rowsAffected                      
+  } catch (e) {
+    console.log(e.message)
+    return { message: e.message }    
+  }
+}
+
 getItemsByDespacho = async (id) => {
   try {
     const sql = `Select  SAITEMFAC.CodItem,SAITEMFAC.Descrip1, SUM(SAITEMFAC.Cantidad) AS Cantidad,
                 SACONF.Descrip As NombEmpresa , saconf.Direc1 , SACONF.Telef,
-                SUDESPACHOS.id As numdespacho, SUDESPACHOS.FechaE , 
+                SUDESPACHOS.id As numdespacho, FORMAT (SUDESPACHOS.FechaE, 'dd-MM-yyyy ') as FechaE , 
                 (Select count(id_despacho) From SUDESPACHOS_01 
                                         Where SUDESPACHOS_01.id_despacho = SUDESPACHOS.id ) as cant_documentos
                 From SUDESPACHOS_01,SAITEMFAC, SACONF, SUDESPACHOS
